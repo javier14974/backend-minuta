@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { FathomService } from './peticiones_fathom/fathom.services';
 
-@Injectable()
+/* @Injectable()
 export class CronServices {
   private readonly logger = new Logger(CronServices.name);
 
@@ -20,4 +20,7 @@ export class CronServices {
       this.logger.error('Error al enviar la minuta automática', error);
     }
   }
-}
+} */
+
+
+  /* mas adelante poder resumir la reus para dar uan informacion mas precisa de que hizo cada programador en toda la semana */

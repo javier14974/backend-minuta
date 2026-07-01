@@ -3,29 +3,22 @@ import { EmailService } from "src/email/email.services";
 import { Traduccion_IA_Services } from "src/IA/Traduccion_IA.services";
 
 @Injectable()
-export class FathomService implements OnModuleInit {
+export class FathomService {
 
     constructor(private readonly traduccionIAServices: Traduccion_IA_Services, private readonly emailService: EmailService) {}
 
 
     gmails: string[] = [
-/*           'f.cabello@grupofirma.cl',
+          'f.cabello@grupofirma.cl',
           'j.castillo@grupofirma.cl',
           'd.nawrath@grupofirma.cl',
           'danko.munoz@grupofirma.cl',
           'f.Bassaletti@grupofirma.cl',
           'k.villagra@grupofirma.cl',
           'j.quevedo@grupofirma.cl',
-          'grupofirma.informatica@gmail.com',  */
+          'grupofirma.informatica@gmail.com',  
           'j.rios@grupofirma.cl',
-/*           'javierriosrojas114@gmail.com' */
         ];
-
-    async onModuleInit() {
-/*         this.getVisits(); */
-    }
-
-
 
     
     async getVisits() {
@@ -140,20 +133,19 @@ export class FathomService implements OnModuleInit {
           }
 
           console.log('TEXTO REUNION:', textoReunion);
+ 
+            const traduccion = await this.traduccionIAServices.generar_traduccion_ia(textoReunion); 
 
-/*            const traduccion = await this.traduccionIAServices.generar_traduccion_ia(textoReunion); 
+          console.log('TRADUCCION:', traduccion.textoRespuesta);   
 
-          console.log('TRADUCCION:', traduccion.textoRespuesta);  */
-
-          await this.emailService.enviar_minuta(textoReunion, this.gmails);
+          await this.emailService.enviar_minuta(traduccion.textoRespuesta, this.gmails);
 
           return {
             resumen: resumen,
             puntosImportantes: puntosImportantes,
             temasVistos: temasVistos,
             proximosPasos: proximosPasos,
-            textoReunion: textoReunion,
-/*             traduccion: traduccion.textoRespuesta, */
+            textoReunion: traduccion.textoRespuesta, 
           };
     }
 

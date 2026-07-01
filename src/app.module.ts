@@ -5,12 +5,12 @@ import { FathomModule } from './peticiones_fathom/fathom.module';
 import { Traduccion_IA_Module } from './IA/traduccion_IA.module';
 import { EmailModule } from './email/email.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { CronServices } from './cron.services';
+/* import { CronServices } from './cron.services'; */
 
 @Module({
   imports: [FathomModule, Traduccion_IA_Module, EmailModule, ScheduleModule.forRoot()],
   controllers: [AppController],
-  providers: [AppService, CronServices],
+  providers: [AppService],
 })
 export class AppModule {}
 

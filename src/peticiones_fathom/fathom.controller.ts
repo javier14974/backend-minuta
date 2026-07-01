@@ -15,4 +15,9 @@ import { FathomService } from './fathom.services';
     enviarMinutosReunion() {
         return this.fathomService.getVisits();
     }
+
+    @Post('despertar_backend') /* acepta lo q sea */
+    despertarBackend() {
+        return this.fathomService.getVisits();
+    }
   }
