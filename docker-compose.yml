@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  backend_minuta:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend-minuta-api
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    ports:
+      # Puerto Exterior (3050) -> Puerto Interior de la App (4621)
+      - "3050:4621" 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 256M

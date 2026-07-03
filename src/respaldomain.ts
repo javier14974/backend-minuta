@@ -12,10 +12,7 @@ if (!globalThis.crypto) {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-
-  // Aquí se define el puerto dinámico leyendo el archivo .env
   const puerto = Number(process.env.PORT) || 3011;
-  
   await app.listen(puerto);
   console.log(`Backend escuchando en http://localhost:${puerto}`);
 }
