@@ -10,17 +10,11 @@ export class FathomService {
     constructor(private readonly traduccionIAServices: Traduccion_IA_Services, private readonly emailService: EmailService) {}
 
 
-    gmails: string[] = [
-          'f.cabello@grupofirma.cl',
-          'j.castillo@grupofirma.cl',
-          'd.nawrath@grupofirma.cl',
-          'danko.munoz@grupofirma.cl',
-          'f.Bassaletti@grupofirma.cl',
-          'k.villagra@grupofirma.cl',
-          'j.quevedo@grupofirma.cl',
-          'grupofirma.informatica@gmail.com',  
-          'j.rios@grupofirma.cl',
-        ];
+    private get gmails(): string[] {
+        const emails = process.env.EMAILS_MINUTA;
+        if (!emails) throw new Error('EMAILS_MINUTA no está configurada en el servidor');
+        return emails.split(',').map(e => e.trim()).filter(Boolean);
+    }
 
 
     procesarMinutaEnBackground() {
