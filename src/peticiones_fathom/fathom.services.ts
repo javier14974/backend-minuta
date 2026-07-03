@@ -1,9 +1,11 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
+import axios from "axios";
 import { EmailService } from "src/email/email.services";
 import { Traduccion_IA_Services } from "src/IA/Traduccion_IA.services";
 
 @Injectable()
 export class FathomService {
+    private readonly logger = new Logger(FathomService.name);
 
     constructor(private readonly traduccionIAServices: Traduccion_IA_Services, private readonly emailService: EmailService) {}
 
@@ -20,20 +22,74 @@ export class FathomService {
           'j.rios@grupofirma.cl',
         ];
 
-    
+
+    procesarMinutaEnBackground() {
+        this.getVisits()
+            .then(() => this.logger.log('Minuta procesada y enviada correctamente'))
+            .catch((error) => this.logger.error('Error procesando minuta en background', error));
+    }
+
+    private async esperar(milisegundos: number) {
+        return new Promise((resolve) => setTimeout(resolve, milisegundos));
+    }
+
+    private async obtenerReunionesFathom() {
+        const apiKey = process.env.KEY_FATHOM?.trim();
+
+        if (!apiKey) {
+            throw new Error('KEY_FATHOM no está configurada en el servidor');
+        }
+
+        const maxIntentos = 3;
+        let ultimoError: Error | null = null;
+
+        for (let intento = 1; intento <= maxIntentos; intento++) {
+            try {
+                const response = await axios.get(
+                    'https://api.fathom.ai/external/v1/meetings',
+                    {
+                        params: { include_summary: true },
+                        headers: { 'X-Api-Key': apiKey },
+                        timeout: 30000,
+                        responseType: 'text',
+                        validateStatus: () => true,
+                    },
+                );
+
+                const textoRespuesta = response.data?.trim() ?? '';
+
+                if (response.status !== 200) {
+                    throw new Error(
+                        `Fathom respondió ${response.status}: ${textoRespuesta || 'sin cuerpo'}`,
+                    );
+                }
+
+                if (!textoRespuesta) {
+                    throw new Error('Fathom devolvió una respuesta vacía');
+                }
+
+                try {
+                    return JSON.parse(textoRespuesta);
+                } catch {
+                    throw new Error(
+                        `Fathom devolvió JSON inválido: ${textoRespuesta.slice(0, 200)}`,
+                    );
+                }
+            } catch (error) {
+                ultimoError = error instanceof Error ? error : new Error(String(error));
+                this.logger.warn(`Fathom intento ${intento}/${maxIntentos}: ${ultimoError.message}`);
+
+                if (intento < maxIntentos) {
+                    await this.esperar(intento * 2000);
+                }
+            }
+        }
+
+        throw ultimoError ?? new Error('No se pudo consultar Fathom');
+    }
+
     async getVisits() {
-        const response = await fetch("https://api.fathom.ai/external/v1/meetings?include_summary=true", {
-            method: "GET",
-            headers: {
-              "X-Api-Key": process.env.KEY_FATHOM || ""
-            },
-          });
-
-          if(!response) {
-            throw new Error("Error al obtener las visitas");
-          }
-
-          const body = await response.json();
+          const body = await this.obtenerReunionesFathom();
           
           if (!body.items || body.items.length === 0) {
             return { resumen: "No hay reuniones disponibles", puntosImportantes: [], temasVistos: [], proximosPasos: [] };
