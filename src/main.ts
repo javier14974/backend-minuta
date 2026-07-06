@@ -17,6 +17,6 @@ async function bootstrap() {
   const puerto = Number(process.env.PORT) || 3011;
   
   await app.listen(puerto);
-  console.log(`Backend escuchando en http://localhost:${puerto}`);
+/*   console.log(`Backend escuchando en http://localhost:${puerto}`); */
 }
 bootstrap();
