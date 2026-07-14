@@ -4,4 +4,5 @@ export class UsuariosDto {
     email: string;
     createdAt: Date;
     roles: string[];
+    seccion: string;
 }

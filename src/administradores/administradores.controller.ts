@@ -9,7 +9,7 @@ export class AdministradoresController {
     
     @Post('login')
     async login(@Body() body: { email: string, contraseña: string }) {
-        return this.administradoresServices.LoginDto(body);
+        return this.administradoresServices.login(body);
     }
 
 

@@ -236,10 +236,16 @@ export class EmailService {
   }
 
   async enviar_minuta(texto_minuta: string, gmail: string[]): Promise<void> {
+    const destinatarios = gmail.map((email) => email.trim()).filter(Boolean);
+
+    if (destinatarios.length === 0) {
+      throw new Error('No hay destinatarios para enviar la minuta');
+    }
+
     const telefono = "+56951690604";
 
     await this.send({
-      to: gmail,
+      to: destinatarios,
       telefono,
       subject: "Minuta de Reunión - Grupo Firma",
       html: this.html_minuta(texto_minuta, telefono),

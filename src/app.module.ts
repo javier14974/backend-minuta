@@ -8,10 +8,14 @@ import { EmailModule } from './email/email.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RolesModule } from './roles/roles.module';
 import { RolesEntry } from './roles/roles.entry';
-import { UsuariosEntry } from './usuarios/entry/usuarios.entry';
 import { UsuarioRolesEntry } from './usuarios/entry/usuario-roles.entry';
+import { UsuariosEntry } from './usuarios/entry/usuarios.entry';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AdministradoresModule } from './administradores/administradores.module';
+import { KeysEntry } from './keys/entry/keys.entry';
+import { SeccionesEntry } from './secciones/entry/secciones.entry';
+import { KeysModule } from './keys/keys.module';
+import { SeccionesModule } from './secciones/secciones.module';
 /* import { CronServices } from './cron.services'; */
 
 @Module({
@@ -23,9 +27,9 @@ import { AdministradoresModule } from './administradores/administradores.module'
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      models: [RolesEntry, UsuariosEntry, UsuarioRolesEntry],
+      models: [RolesEntry, UsuariosEntry, UsuarioRolesEntry, SeccionesEntry, KeysEntry],
       autoLoadModels: true,
-      synchronize: false, // false en producción, true en desarrollo
+      synchronize:false, // false en producción, true en desarrollo
       logging: false,
     }),
     FathomModule,
@@ -35,6 +39,8 @@ import { AdministradoresModule } from './administradores/administradores.module'
     RolesModule,
     UsuariosModule,
     AdministradoresModule,
+    KeysModule,
+    SeccionesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

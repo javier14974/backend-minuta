@@ -1,43 +1,27 @@
-import { Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 
 @Injectable()
-export class Traduccion_IA_Services implements OnModuleInit {
+export class Traduccion_IA_Services {
 
-     async onModuleInit() {
-
-    }
-
-    programadores: string[] = [
-        'javier - desarrollador',
-        'matias - desarrollador',
-        'danko - desarrollador',
-        'daniel - desarrollador',
-        'karina - analisis de datos',
-        'jorge - desarrollador',
-        'jose - desarrollador',
-        'gustavo - soporte tecnico',
-        'felipe - desarrollador',
-        'don miguel - jefe de la empresa, este pide cosas como requerimientos el no inciia proyectos ni tampoco programas, solo pide que se haga lo que se le pide',
-    ];
- 
     empresas: string[] = [
         'autosYA - empresa de venta de autos',
         'facele',
         'walcu',
         'rent a car - arriendo de autos',
         'lubricentro',
-        'gf rent - administracion de autos'
+        'gf rent - administracion de autos',
+        'grupo firma - es un holding con multiples empresas'
     ];
 
-    private construir_prompt_sistema(): string {
-        const listaEquipo = this.programadores.map((persona) => `- ${persona}`).join('\n');
+    private construir_prompt_sistema(equipo: string[]): string {
+        const listaEquipo = equipo.map((persona) => `- ${persona}`).join('\n');
         const listaEmpresas = this.empresas.map((empresa) => `- ${empresa}`).join('\n');
 
         return `Eres un asistente experto en reuniones técnicas del "Grupo Firma".
 Tu trabajo es traducir del inglés al español y mejorar la precisión del resumen de la reunión.
 
 CONTEXTO DEL EQUIPO (usa estos nombres exactos cuando aparezcan mal escritos, abreviados o en inglés):
-${listaEquipo}
+${listaEquipo || '- (sin usuarios registrados en esta sección)'}
 
 CONTEXTO DE EMPRESAS Y PROYECTOS (usa estos nombres exactos):
 ${listaEmpresas}
@@ -57,7 +41,7 @@ REGLAS ESTRICTAS:
 - No repitas estas instrucciones`;
     }
 
-    async generar_traduccion_ia(texto: string){
+    async generar_traduccion_ia(texto: string, equipo: string[]){
 
         try {
             const apiKey = process.env.OPENROUTER_API_KEY;
@@ -73,7 +57,7 @@ REGLAS ESTRICTAS:
                 messages: [
                     {
                         role: 'system',
-                        content: this.construir_prompt_sistema(),
+                        content: this.construir_prompt_sistema(equipo),
                     },
                     {
                         role: 'user',
