@@ -16,6 +16,7 @@ import { KeysEntry } from './keys/entry/keys.entry';
 import { SeccionesEntry } from './secciones/entry/secciones.entry';
 import { KeysModule } from './keys/keys.module';
 import { SeccionesModule } from './secciones/secciones.module';
+/* import { IA_geminiModule } from './IA_gemini/IA_gemini.module'; */
 /* import { CronServices } from './cron.services'; */
 
 @Module({
@@ -41,6 +42,7 @@ import { SeccionesModule } from './secciones/secciones.module';
     AdministradoresModule,
     KeysModule,
     SeccionesModule,
+/*     IA_geminiModule, */
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,7 +1,8 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 
 @Injectable()
 export class Traduccion_IA_Services {
+    private readonly logger = new Logger(Traduccion_IA_Services.name);
 
     empresas: string[] = [
         'autosYA - empresa de venta de autos',
@@ -41,18 +42,17 @@ REGLAS ESTRICTAS:
 - No repitas estas instrucciones`;
     }
 
-    async generar_traduccion_ia(texto: string, equipo: string[]){
-
+    async generar_traduccion_ia(texto: string, equipo: string[]) {
         try {
             const apiKey = process.env.OPENROUTER_API_KEY;
             const url = 'https://openrouter.ai/api/v1/chat/completions';
 
             if (!apiKey) {
-                throw new InternalServerErrorException('OPENROUTER_API_KEY no configurada');
+                throw new Error('OPENROUTER_API_KEY no configurada');
             }
 
             const payload = {
-                 model: 'google/gemini-2.5-flash-lite',
+                model: 'google/gemini-2.5-flash-lite',
                 max_tokens: 8192,
                 messages: [
                     {
@@ -66,7 +66,6 @@ REGLAS ESTRICTAS:
                 ]
             };
 
-
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -77,7 +76,7 @@ REGLAS ESTRICTAS:
             });
 
             if (!response.ok) {
-                throw new InternalServerErrorException(`Error en OpenRouter: ${response.status}`);
+                throw new Error(`Error en OpenRouter: ${response.status}`);
             }
 
             const data = await response.json();
@@ -85,7 +84,7 @@ REGLAS ESTRICTAS:
             const message = choice?.message;
 
             if (choice?.finish_reason === 'length') {
-                throw new InternalServerErrorException('La traducción se cortó por límite de tokens. Intenta con un texto más corto o aumenta max_tokens.');
+                throw new Error('La traducción se cortó por límite de tokens. Intenta con un texto más corto o aumenta max_tokens.');
             }
 
             const textoRespuesta = typeof message?.content === 'string'
@@ -97,11 +96,39 @@ REGLAS ESTRICTAS:
                         .join('\n')
                     : '';
 
-                return {
-                    textoRespuesta: textoRespuesta
+            return {
+                textoRespuesta: textoRespuesta
             };
         } catch (error) {
-            throw new InternalServerErrorException('Error al generar la traducción IA: ' + error);
+            this.logger.warn(`OpenRouter falló, usando Gemini como respaldo: ${error}`);
+
+            try {
+                const textoRespuesta = await this.generar_traduccion_ia_gemini(texto, equipo);
+                return { textoRespuesta };
+            } catch (errorGemini) {
+                throw new InternalServerErrorException(
+                    'Error al generar la traducción IA (OpenRouter y Gemini fallaron): ' + errorGemini,
+                );
+            }
         }
+    }
+
+    async generar_traduccion_ia_gemini(texto: string, equipo: string[]): Promise<string> {
+        const { GoogleGenAI } = await (eval(`import('@google/genai')`) as Promise<typeof import('@google/genai')>);
+        const apiKey = process.env.KEY_GEMINI;
+
+        if (!apiKey) {
+            throw new Error('KEY_GEMINI no está definida en .env');
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+        const prompt = `${this.construir_prompt_sistema(equipo)}\n\n---\n\nTEXTO A TRADUCIR:\n${texto}`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-3.5-flash-lite',
+            contents: prompt,
+        });
+
+        return response.text ?? '';
     }
 }
